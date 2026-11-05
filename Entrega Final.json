@@ -1,0 +1,2154 @@
+{
+  "name": "Entrega Final",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyHour",
+              "minute": 13
+            }
+          ]
+        },
+        "authentication": "oAuth2",
+        "databaseId": {
+          "__rl": true,
+          "value": "414b3a58-a904-82d4-a11a-0156cd5fa555",
+          "mode": "list",
+          "cachedResultName": "Centro de comando (Ideas)",
+          "cachedResultUrl": "https://app.notion.com/p/414b3a58a90482d4a11a0156cd5fa555"
+        }
+      },
+      "id": "de1937d3-9b61-4ddd-bdb1-028cb22c706a",
+      "name": "Notion Trigger",
+      "type": "n8n-nodes-base.notionTrigger",
+      "typeVersion": 1,
+      "position": [
+        8192,
+        3408
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Estado|select",
+              "selectValue": "Generando"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9989c626-5481-4057-9b69-29e4eab1370e",
+      "name": "Estado: Generando",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        8640,
+        3408
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Preparar entrada').first().json.pageId }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Borrador generado|checkbox",
+              "checkboxValue": true
+            },
+            {
+              "key": "Estado|select",
+              "selectValue": "En revisión"
+            },
+            {
+              "key": "Última ejecución|date",
+              "date": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "772647e4-1377-4b8a-a635-8164a9384d65",
+      "name": "Guardar borrador (En revisión)",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        11120,
+        3184
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "sendAndWait",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C6LJ5UB8E",
+          "mode": "list",
+          "cachedResultName": "aprobar-entrega-final"
+        },
+        "message": "=*{{ $('Armar texto final').first().json.titulo }}*\n\n{{ $('Armar texto final').first().json.cuerpo_final }}\n\n—————\n_Red:_ {{ $('Preparar entrada').first().json.red_social }} · _Texto:_ {{ $('Armar texto final').first().json.largo_texto }} caracteres (permitido {{ $('Armar texto final').first().json.espacio_min }} a {{ $('Armar texto final').first().json.espacio_max }}) · _Total con aviso:_ {{ $('Armar texto final').first().json.largo_total }} (tope {{ $('Armar texto final').first().json.tope_total }})\n_Imagen:_ {{ $('Armar texto final').first().json.imagen_url || 'sin imagen' }}\n_Registros usados:_ {{ $('Armar texto final').first().json.registros_usados.join(', ') || 'ninguno' }}\n_Fuera de la base:_ {{ $('Armar texto final').first().json.afirmaciones_fuera_de_base.join(' | ') || 'ninguna' }}\n_A verificar antes de publicar:_ {{ $('Armar texto final').first().json.datos_a_verificar.join(' | ') || 'nada' }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Aprobar",
+            "disapproveLabel": "Rechazar"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "resumeAmount": 24
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        11344,
+        3184
+      ],
+      "id": "624eda9b-d552-4347-b4bc-2200398ec456",
+      "name": "HITL: Esperar aprobación",
+      "webhookId": "ad883557-dfa6-4848-b764-470df8f66f7d",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "WEaMx24V2L36FiGB",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Preparar entrada').first().json.pageId }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Aprobado|checkbox",
+              "checkboxValue": "={{ $json.data?.approved === true }}"
+            },
+            {
+              "key": "Estado|select",
+              "selectValue": "={{ $json.data?.approved === true ? 'Aprobado' : 'Rechazado' }}"
+            },
+            {
+              "key": "Última ejecución|date",
+              "date": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "30110f19-f660-4e06-a71c-5397dcca2616",
+      "name": "Registrar decisión",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        11568,
+        3184
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-aprobado",
+              "leftValue": "={{ $('HITL: Esperar aprobación').first().json.data?.approved === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8416c3d1-9606-4546-a5f9-b1ea47e4b2ac",
+      "name": "Filtro: ¿Aprobado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        11792,
+        3184
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Preparar entrada').first().json.pageId }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Estado|select",
+              "selectValue": "Publicado"
+            },
+            {
+              "key": "Última ejecución|date",
+              "date": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3f47671a-8246-42c4-a44a-864f5cee6090",
+      "name": "Estado: Publicado",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        12464,
+        2928
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "403b3a58-a904-8054-b1ff-fc1868f081d6",
+          "mode": "list",
+          "cachedResultName": "Registro de ejecuciones",
+          "cachedResultUrl": "https://app.notion.com/p/403b3a58a9048054b1fffc1868f081d6"
+        },
+        "title": "={{ $('Preparar entrada').first().json.idea || 'Sin idea' }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Resultado|select",
+              "selectValue": "Publicado"
+            },
+            {
+              "key": "Detalle|rich_text",
+              "textContent": "Aprobado por humano y publicado."
+            },
+            {
+              "key": "Fecha|date",
+              "date": "={{ $now.toISO() }}"
+            },
+            {
+              "key": "Post|relation",
+              "relationValue": [
+                "={{ $('Preparar entrada').first().json.pageId }}"
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d63072ba-f35c-4d4a-8547-df9190828c44",
+      "name": "Registro: Publicado",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        12912,
+        3568
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "403b3a58-a904-8054-b1ff-fc1868f081d6",
+          "mode": "list",
+          "cachedResultName": "Registro de ejecuciones",
+          "cachedResultUrl": "https://app.notion.com/p/403b3a58a9048054b1fffc1868f081d6"
+        },
+        "title": "={{ $('Preparar entrada').first().json.idea || 'Sin idea' }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Resultado|select",
+              "selectValue": "={{ $('HITL: Esperar aprobación').first().json.data?.approved === false ? 'Rechazado' : 'Vencido' }}"
+            },
+            {
+              "key": "Detalle|rich_text",
+              "textContent": "={{ $('HITL: Esperar aprobación').first().json.data?.approved === false ? 'Rechazado por humano en el HITL.' : 'Vencido: sin respuesta en el tiempo límite.' }}"
+            },
+            {
+              "key": "Fecha|date",
+              "date": "={{ $now.toISO() }}"
+            },
+            {
+              "key": "Post|relation",
+              "relationValue": [
+                "={{ $('Preparar entrada').first().json.pageId }}"
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fac8831c-d890-461b-bb4e-91172fd577be",
+      "name": "Registro: Rechazado",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        12240,
+        3584
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=IDEA SEMILLA:\n{{ $json.idea }}\n\nRED SOCIAL: {{ $json.red_social }}\nETIQUETAS SOLICITADAS: {{ $json.etiquetas }}\n\nDIRECTRICES DE {{ $json.red_social }}:\n{{ $json.directrices }}\n\nLARGO: tu texto (con hashtags y emojis incluidos, y sin el aviso legal, que se agrega después) debe tener entre {{ $json.espacio_min }} y {{ $json.espacio_max }} caracteres. Si el largo de las directrices difiere, usá este rango. No superes el máximo bajo ningún concepto; apuntá a cerca del 90 % del máximo.\n\nRedactá el post de {{ $json.red_social }} sobre la idea semilla.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Sos un redactor de contenido educativo sobre finanzas personales para Argentina. Tenés una herramienta:\n- consultar_conocimiento: devuelve los registros de la base de conocimiento para UNA etiqueta. Cada registro trae: Registro, Detalle, Ejemplo práctico, Advertencias, Nivel, Fuente sugerida, Verificar actualidad e ID.\n\nEtiquetas válidas (nombre exacto): Fundamentos, Preparación, Riesgo, Instrumentos, Primeros pasos, Errores, Contexto argentino.\n\nProcedimiento obligatorio:\n1. Llamá a consultar_conocimiento para todas las etiquetas solicitadas en un mismo paso. Si la idea semilla lo requiere, podés consultar además otras etiquetas válidas, hasta 5 consultas en total.\n2. Redactá el post a partir de los registros recuperados, respetando las DIRECTRICES y el LARGO que figuran en el mensaje. Si la directriz de Imagen es obligatoria, escribí el texto como un epígrafe que acompaña una imagen.\n\nReglas de contenido:\n- Todo dato, cifra, tasa, plazo, impuesto, norma o nombre de instrumento debe provenir de los registros recuperados. Tu conocimiento general solo sirve para explicar con otras palabras, dar analogías y armar ejemplos hipotéticos, siempre presentados como tales.\n- Usá el Detalle como base y el Ejemplo práctico como inspiración para los ejemplos.\n- Respetá las Advertencias de cada registro: reflejalas en el texto como cautelas.\n- Si un registro tiene Verificar actualidad = Sí, no afirmes tasas, cotizaciones, plazos ni normas vigentes: explicá solo el concepto y anotá en datos_a_verificar cualquier dato concreto que uses de ese registro.\n- Si falta un dato necesario, omitilo; no lo inventes.\n- No des recomendaciones personalizadas de inversión ni prometas ganancias.\n- No incluyas aviso legal ni descargos: se agregan automáticamente en un paso posterior.\n\nCampos de control de la salida:\n- registros_usados: los ID de los registros en los que te apoyaste.\n- afirmaciones_fuera_de_base: frases del post que no estén respaldadas por los registros (analogías, ejemplos hipotéticos, explicaciones generales). Lista vacía si no hay ninguna.\n- datos_a_verificar: datos concretos del post que provienen de registros con Verificar actualidad = Sí. Lista vacía si no hay ninguno.",
+          "maxIterations": 5,
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "4c824b0b-ff75-4973-ba22-624e2fc16b00",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        10272,
+        3472
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Devuelve los registros de la base de conocimiento de finanzas personales que tienen la etiqueta indicada (Registro, Detalle, Ejemplo práctico, Advertencias, Nivel, Fuente sugerida, Verificar actualidad e ID). Se llama una vez por etiqueta.",
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "0c4b3a58-a904-83d4-80b0-0109d626a9e0",
+          "mode": "list",
+          "cachedResultName": "Tema Finanzas Personales",
+          "cachedResultUrl": "https://app.notion.com/p/0c4b3a58a90483d480b00109d626a9e0"
+        },
+        "returnAll": true,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Etiqueta|multi_select",
+              "condition": "contains",
+              "multiSelectValue": "={{ $fromAI('etiqueta', 'Nombre exacto de una etiqueta válida: Fundamentos, Preparación, Riesgo, Instrumentos, Primeros pasos, Errores o Contexto argentino', 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1f59530a-864a-41fd-8861-3d634e6df3e3",
+      "name": "consultar_conocimiento",
+      "type": "n8n-nodes-base.notionTool",
+      "typeVersion": 2.2,
+      "position": [
+        10352,
+        3696
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"titulo\": {\n      \"type\": \"string\",\n      \"description\": \"Título o gancho del post\"\n    },\n    \"cuerpo\": {\n      \"type\": \"string\",\n      \"description\": \"Texto completo del post, sin aviso legal\"\n    },\n    \"etiquetas_consultadas\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"description\": \"Etiquetas consultadas en la base de conocimiento\"\n    },\n    \"registros_usados\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"description\": \"ID de los registros en los que se apoya el post\"\n    },\n    \"afirmaciones_fuera_de_base\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"description\": \"Frases del post no respaldadas por los registros (analogías, ejemplos hipotéticos, explicaciones generales); vacío si no hay\"\n    },\n    \"datos_a_verificar\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"description\": \"Datos concretos provenientes de registros con Verificar actualidad = Sí; vacío si no hay\"\n    }\n  },\n  \"required\": [\n    \"titulo\",\n    \"cuerpo\",\n    \"etiquetas_consultadas\",\n    \"registros_usados\",\n    \"afirmaciones_fuera_de_base\",\n    \"datos_a_verificar\"\n  ]\n}"
+      },
+      "id": "f5ab3c2e-a48c-4621-85cc-67445ce0c20a",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        10480,
+        3696
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C6FPP47GW",
+          "mode": "list",
+          "cachedResultName": "log-errores"
+        },
+        "text": "=Problema con el aviso legal de \"{{ $('Preparar entrada').first().json.idea }}\": {{ $json.error ? ($json.error.message || JSON.stringify($json.error)) : 'Sin detalle' }}. No pasó a revisión.",
+        "otherOptions": {
+          "thread_ts": {
+            "replyValues": {
+              "thread_ts": "={{ $('Slack: Abrir hilo').first().json.ts }}"
+            }
+          }
+        }
+      },
+      "id": "5c81d078-1d3b-4a2d-badc-b8124435c053",
+      "name": "Log: Falta aviso legal",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        12464,
+        4528
+      ],
+      "webhookId": "0c80ea8f-a6f8-41bf-a8cc-dee5aff1b236",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "WEaMx24V2L36FiGB",
+          "name": "Slack account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C6FPP47GW",
+          "mode": "list",
+          "cachedResultName": "log-errores"
+        },
+        "text": "=Error del AI Agent al generar el borrador de: {{ $('Preparar entrada').first().json.idea }}\n{{ $json.error ? ($json.error.message || JSON.stringify($json.error)) : 'Sin detalle' }}",
+        "otherOptions": {
+          "thread_ts": {
+            "replyValues": {
+              "thread_ts": "={{ $('Slack: Abrir hilo').first().json.ts }}"
+            }
+          }
+        }
+      },
+      "id": "481b81f1-a36a-484a-b818-3ea3b85aef38",
+      "name": "Log: Error del agente",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        12464,
+        4112
+      ],
+      "webhookId": "4e09fe56-5ab0-432b-b45a-b2e68bde42e3",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "WEaMx24V2L36FiGB",
+          "name": "Slack account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "403b3a58-a904-8054-b1ff-fc1868f081d6",
+          "mode": "list",
+          "cachedResultName": "Registro de ejecuciones",
+          "cachedResultUrl": "https://app.notion.com/p/403b3a58a9048054b1fffc1868f081d6"
+        },
+        "title": "={{ $('AI Agent').first().json.error?.message || $('AI Agent').first().json.error || 'Error sin detalle' }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Resultado|select",
+              "selectValue": "Error agente"
+            },
+            {
+              "key": "Detalle|rich_text",
+              "textContent": "={{ $('AI Agent').first().json.error?.message || $('AI Agent').first().json.error || 'Sin detalle' }}"
+            },
+            {
+              "key": "Fecha|date",
+              "date": "={{ $now.toISO() }}"
+            },
+            {
+              "key": "Post|relation",
+              "relationValue": [
+                "={{ $('Preparar entrada').first().json.pageId }}"
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5ac51b0e-5f4f-4fee-93e9-7338e522e734",
+      "name": "Registro: Error del agente",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        12688,
+        4112
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "403b3a58-a904-8054-b1ff-fc1868f081d6",
+          "mode": "list",
+          "cachedResultName": "Registro de ejecuciones",
+          "cachedResultUrl": "https://app.notion.com/p/403b3a58a9048054b1fffc1868f081d6"
+        },
+        "title": "={{ $('Calcular espacio y aviso').first().json.error?.message || $('Calcular espacio y aviso').first().json.error || 'Error sin detalle' }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Resultado|select",
+              "selectValue": "Sin aviso legal"
+            },
+            {
+              "key": "Detalle|rich_text",
+              "textContent": "={{ $('Calcular espacio y aviso').first().json.error?.message || $('Calcular espacio y aviso').first().json.error || 'Sin detalle' }}"
+            },
+            {
+              "key": "Fecha|date",
+              "date": "={{ $now.toISO() }}"
+            },
+            {
+              "key": "Post|relation",
+              "relationValue": [
+                "={{ $('Preparar entrada').first().json.pageId }}"
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "71cc6eac-cca3-4edc-89e4-65ef681baa78",
+      "name": "Registro: Sin aviso legal",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        12688,
+        4528
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "2dcb3a58-a904-830d-b9f9-819326c41f1b",
+          "mode": "list",
+          "cachedResultName": "Directrices Artículos",
+          "cachedResultUrl": "https://app.notion.com/p/2dcb3a58a904830db9f9819326c41f1b"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "e95b7610-3063-4210-bd5e-eed1a54c65c7",
+      "name": "Leer directrices",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        8864,
+        3408
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const arr = (v) => [].concat(v || []);\nconst val = (v) => String(arr(v)[0] ?? '').trim();\nconst snake = (s) => s.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-z0-9]+/g, '_');\n\n// Centro de comando (trigger): claves como \"Nombre\" o \"Nombre|tipo\"\nconst getT = (o, name) => {\n  const k = Object.keys(o).find(k => k === name || k.startsWith(name + '|'));\n  return k ? o[k] : undefined;\n};\n// Directrices (salida simplificada): claves property_<nombre>\nconst getP = (o, name) => o['property_' + snake(name)];\n\nconst trigger = $('Notion Trigger').first().json;\nconst idea = val(getT(trigger, 'Idea semilla'));\nconst etiquetas = String(getT(trigger, 'Etiquetas') || '').split(',').map(t => t.trim()).filter(Boolean);\nconst red_social = val(getT(trigger, 'Red Social'));\nconst imagen_url = val(getT(trigger, 'URL de imagen'));\n\nconst filas = $input.all().map(i => i.json).filter(p => arr(getP(p, 'Red Social')).map(String).includes(red_social));\nif (!filas.length) throw new Error(`No hay directrices cargadas para la red social \"${red_social}\"`);\n\nconst fila = (concepto) => filas.find(p => val(getP(p, 'Concepto')).toLowerCase() === concepto.toLowerCase());\nconst filaLargo = fila('Largo');\nconst largo_min = Number(getP(filaLargo || {}, 'Largo min'));\nconst largo_max = Number(getP(filaLargo || {}, 'Largo max'));\nconst tope_total = Number(getP(filaLargo || {}, 'Tope total'));\nif (![largo_min, largo_max, tope_total].every(Number.isFinite) || largo_max <= 0 || tope_total <= 0) {\n  throw new Error(`Faltan los límites de largo (Largo min / Largo max / Tope total) para \"${red_social}\"`);\n}\n\nconst requiere_imagen = /obligatoria/i.test(val(getP(fila('Imagen') || {}, 'Regla')));\nconst aviso_etiqueta = /corto/i.test(val(getP(fila('Aviso legal') || {}, 'Regla'))) ? 'Legal corto' : 'Legal';\nconst directrices = filas.map(p => `- ${val(getP(p, 'Concepto'))}: ${val(getP(p, 'Regla'))}`).join('\\n');\n\nreturn [{ json: { pageId: trigger.id, idea, etiquetas: etiquetas.join(', '), red_social, imagen_url, requiere_imagen, largo_min, largo_max, tope_total, aviso_etiqueta, directrices } }];"
+      },
+      "id": "3192493a-9fad-4bd7-b653-1a2ee8399fec",
+      "name": "Preparar entrada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9088,
+        3408
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const get = (o, name) => {\n  const k = Object.keys(o).find(k => k.toLowerCase().startsWith('property_' + name) || k.toLowerCase().startsWith(name));\n  return k ? o[k] : undefined;\n};\nconst p = $('Preparar entrada').first().json;\n\nconst avisos = $input.all().map(i => String(get(i.json, 'detalle') || '').trim()).filter(Boolean);\nif (!avisos.length) {\n  throw new Error(`No se encontró el aviso legal (etiqueta ${p.aviso_etiqueta}) en la base de conocimiento`);\n}\nconst aviso = avisos.join('\\n');\n\n// El largo de las Directrices es el del texto de la IA, sin el aviso.\n// El máximo efectivo también respeta el tope total de la red (texto + salto + aviso).\nconst separador = 2;\nconst espacio_min = p.largo_min;\nconst espacio_max = Math.min(p.largo_max, p.tope_total - aviso.length - separador);\nif (espacio_max < Math.max(espacio_min, 60)) {\n  throw new Error(`Con el aviso legal (${aviso.length} caracteres) el texto en ${p.red_social} puede tener como máximo ${espacio_max} (mínimo ${espacio_min}, tope total ${p.tope_total}). Usá el aviso corto en las Directrices de esta red.`);\n}\n\nreturn [{ json: { ...p, aviso, espacio_min, espacio_max } }];"
+      },
+      "id": "1a8a0acf-5ecc-4b08-84f2-7d01dc68c407",
+      "name": "Calcular espacio y aviso",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9760,
+        3696
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aebd64cf-f4e2-4d1d-88fa-0f7287c11dc4",
+              "leftValue": "={{ !($json.requiere_imagen && !$json.imagen_url) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "26146c71-afb2-4826-9772-7955a171bade",
+      "name": "¿Imagen OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        9984,
+        3600
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $('Calcular espacio y aviso').first().json;\nconst out = $('AI Agent').first().json.output;\nif (!out || !out.cuerpo) throw new Error('El agente no devolvió el campo cuerpo');\nconst cuerpo = out.cuerpo.trim();\nconst largo_texto = cuerpo.length;\nconst cuerpo_final = cuerpo + '\\n\\n' + p.aviso;\nconst largo_total = cuerpo_final.length;\nconst formato_ok = largo_texto >= p.espacio_min && largo_texto <= p.espacio_max && largo_total <= p.tope_total;\n\nreturn [{\n  json: {\n    pageId: p.pageId,\n    titulo: out.titulo,\n    cuerpo_final,\n    largo_texto,\n    largo_total,\n    espacio_min: p.espacio_min,\n    espacio_max: p.espacio_max,\n    tope_total: p.tope_total,\n    formato_ok,\n    imagen_url: p.imagen_url,\n    etiquetas_consultadas: out.etiquetas_consultadas || [],\n    registros_usados: out.registros_usados || [],\n    afirmaciones_fuera_de_base: out.afirmaciones_fuera_de_base || [],\n    datos_a_verificar: out.datos_a_verificar || []\n  }\n}];"
+      },
+      "id": "3d7ef75b-2ea0-4a66-8a7c-7b8a70298379",
+      "name": "Armar texto final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        10672,
+        3376
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9b6d48fe-eefe-4179-b06a-5d4008ce7162",
+              "leftValue": "={{ $json.formato_ok }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "99d56a64-4e67-4d85-bd62-c163881f1663",
+      "name": "¿Largo dentro del rango?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        10896,
+        3280
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "680775b7-14a5-40ca-a061-c1752a50c99a",
+                    "leftValue": "={{ $('Preparar entrada').first().json.red_social }}",
+                    "rightValue": "LinkedIn",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "LinkedIn"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6b3026c1-74a1-40b7-be1b-f56704077b5d",
+                    "leftValue": "={{ $('Preparar entrada').first().json.red_social }}",
+                    "rightValue": "Instagram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Instagram"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e5b6f35a-5253-4965-a227-39566052904e",
+                    "leftValue": "={{ $('Preparar entrada').first().json.red_social }}",
+                    "rightValue": "X",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "X"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "14557516-0bd1-424d-b2fc-1067da8a5657",
+                    "leftValue": "={{ $('Preparar entrada').first().json.red_social }}",
+                    "rightValue": "Facebook",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Facebook"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Otra red"
+        }
+      },
+      "id": "91f6d9db-5c6c-41f3-9c2e-bc3ac848ae17",
+      "name": "Switch por red",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        12016,
+        2848
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a698ef5-7895-475d-9a0e-f09898ad74ee",
+              "name": "red",
+              "value": "LinkedIn",
+              "type": "string"
+            },
+            {
+              "id": "8b7587aa-b5a0-433e-b557-77446180095e",
+              "name": "texto",
+              "value": "={{ $('Armar texto final').first().json.cuerpo_final }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a824b9dd-8f54-4734-8abf-b74d9d612aa8",
+      "name": "Publicar en LinkedIn (Simulado)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        12240,
+        2608
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "367b6be6-ed7c-4305-a9ff-2057ed170cde",
+              "name": "red",
+              "value": "Instagram",
+              "type": "string"
+            },
+            {
+              "id": "b76ce3bf-a6aa-4e41-82ba-cad49f2b4009",
+              "name": "texto",
+              "value": "={{ $('Armar texto final').first().json.cuerpo_final }}",
+              "type": "string"
+            },
+            {
+              "id": "d405e28d-5803-4eb6-9867-765666b0d806",
+              "name": "imagen_url",
+              "value": "={{ $('Preparar entrada').first().json.imagen_url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7d53235b-9a93-4b60-b3a7-397da71b32e3",
+      "name": "Publicar en Instagram (Simulado)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        12240,
+        2800
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3673f19c-94b5-4eaf-9dea-cf1bc491d3b2",
+              "name": "red",
+              "value": "X",
+              "type": "string"
+            },
+            {
+              "id": "a5f11f5d-ee68-4c8f-97fb-798d03a72ae0",
+              "name": "texto",
+              "value": "={{ $('Armar texto final').first().json.cuerpo_final }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4debdbec-3a4f-42bc-aa40-971f90d831c8",
+      "name": "Publicar en X (Simulado)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        12240,
+        2992
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d34a4fda-29cc-4c19-ade2-e6170444af45",
+              "name": "red",
+              "value": "Facebook",
+              "type": "string"
+            },
+            {
+              "id": "9dfe3bfb-501e-475e-a680-34f61f31e1e1",
+              "name": "texto",
+              "value": "={{ $('Armar texto final').first().json.cuerpo_final }}",
+              "type": "string"
+            },
+            {
+              "id": "26dcbfdb-1d43-40cc-a3ac-7bd39e6c3bfa",
+              "name": "imagen_url",
+              "value": "={{ $('Preparar entrada').first().json.imagen_url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "16ec5866-cce1-4f75-9b58-b7ac243be045",
+      "name": "Publicar en Facebook (Simulado)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        12240,
+        3184
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "351c5818-3fa1-495d-95f8-dff6e2acc973",
+              "name": "error",
+              "value": "={{ { message: 'La red ' + $('Preparar entrada').first().json.red_social + ' no tiene rama de publicación' } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "24dd2063-3584-45c4-ae31-8a27f7dc4aed",
+      "name": "Red sin rama de publicación",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        12240,
+        3376
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C6FPP47GW",
+          "mode": "list",
+          "cachedResultName": "log-errores"
+        },
+        "text": "=Red social sin configuración o sin rama de publicación: {{ $json.error ? ($json.error.message || JSON.stringify($json.error)) : 'Sin detalle' }}",
+        "otherOptions": {}
+      },
+      "id": "c65e112d-877b-4dfc-b5bf-12dad4d4a61b",
+      "name": "Log: Red sin configuración",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        12464,
+        2464
+      ],
+      "webhookId": "e061cb3e-3837-47cb-9301-24dc5d834192",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "WEaMx24V2L36FiGB",
+          "name": "Slack account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "403b3a58-a904-8054-b1ff-fc1868f081d6",
+          "mode": "list",
+          "cachedResultName": "Registro de ejecuciones",
+          "cachedResultUrl": "https://app.notion.com/p/403b3a58a9048054b1fffc1868f081d6"
+        },
+        "title": "={{ (() => {\n  let e;\n  try { e = $('Red sin rama de publicación').first().json.error; }\n  catch (x) { e = $('Preparar entrada').first().json.error; }\n  return e ? (e.message || (typeof e === 'string' ? e : JSON.stringify(e))) : 'Sin detalle';\n})() }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Resultado|select",
+              "selectValue": "Red no soportada"
+            },
+            {
+              "key": "Detalle|rich_text",
+              "textContent": "={{ (() => {\n  let e;\n  try { e = $('Red sin rama de publicación').first().json.error; }\n  catch (x) { e = $('Preparar entrada').first().json.error; }\n  return e ? (e.message || (typeof e === 'string' ? e : JSON.stringify(e))) : 'Sin detalle';\n})() }}"
+            },
+            {
+              "key": "Fecha|date",
+              "date": "={{ $now.toISO() }}"
+            },
+            {
+              "key": "Post|relation",
+              "relationValue": [
+                "={{ $('Notion Trigger').first().json.id }}"
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8e55adc0-bf79-414c-8d84-f466cdac4a41",
+      "name": "Registro: Red no soportada",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        12688,
+        2464
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C6FPP47GW",
+          "mode": "list",
+          "cachedResultName": "log-errores"
+        },
+        "text": "=Falta la URL de imagen para {{ $('Preparar entrada').first().json.red_social }}. La idea \"{{ $('Preparar entrada').first().json.idea }}\" no se generó.",
+        "otherOptions": {
+          "thread_ts": {
+            "replyValues": {
+              "thread_ts": "={{ $('Slack: Abrir hilo').first().json.ts }}"
+            }
+          }
+        }
+      },
+      "id": "e8bb343d-7ba4-40ff-8cf0-3e028796d396",
+      "name": "Log: Falta imagen",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        12464,
+        4336
+      ],
+      "webhookId": "edb3b14e-87ad-496b-818a-6dc277844637",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "WEaMx24V2L36FiGB",
+          "name": "Slack account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "403b3a58-a904-8054-b1ff-fc1868f081d6",
+          "mode": "list",
+          "cachedResultName": "Registro de ejecuciones",
+          "cachedResultUrl": "https://app.notion.com/p/403b3a58a9048054b1fffc1868f081d6"
+        },
+        "title": "={{ $('Preparar entrada').first().json.idea || 'Sin idea' }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Resultado|select",
+              "selectValue": "Falta imagen"
+            },
+            {
+              "key": "Detalle|rich_text",
+              "textContent": "={{ 'La red ' + $('Preparar entrada').first().json.red_social + ' requiere imagen y no se cargó la URL.' }}"
+            },
+            {
+              "key": "Fecha|date",
+              "date": "={{ $now.toISO() }}"
+            },
+            {
+              "key": "Post|relation",
+              "relationValue": [
+                "={{ $('Preparar entrada').first().json.pageId }}"
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d7dba166-bb6c-4658-834d-d49db013b7f1",
+      "name": "Registro: Falta imagen",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        12688,
+        4336
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C6FPP47GW",
+          "mode": "list",
+          "cachedResultName": "log-errores"
+        },
+        "text": "=El texto de {{ $('Preparar entrada').first().json.red_social }} tiene {{ $('Armar texto final').first().json.largo_texto }} caracteres y el rango permitido es {{ $('Armar texto final').first().json.espacio_min }} a {{ $('Armar texto final').first().json.espacio_max }} (tope total con aviso: {{ $('Armar texto final').first().json.tope_total }}; total obtenido: {{ $('Armar texto final').first().json.largo_total }}). No pasó a revisión.\nIdea: {{ $('Preparar entrada').first().json.idea }}",
+        "otherOptions": {
+          "thread_ts": {
+            "replyValues": {
+              "thread_ts": "={{ $('Slack: Abrir hilo').first().json.ts }}"
+            }
+          }
+        }
+      },
+      "id": "a9071f13-912a-424e-be71-3f52ec6d5f39",
+      "name": "Log: Fuera de largo",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        12464,
+        3728
+      ],
+      "webhookId": "3f069b7a-eb26-49c8-b7bd-a482fd76be28",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "WEaMx24V2L36FiGB",
+          "name": "Slack account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "403b3a58-a904-8054-b1ff-fc1868f081d6",
+          "mode": "list",
+          "cachedResultName": "Registro de ejecuciones",
+          "cachedResultUrl": "https://app.notion.com/p/403b3a58a9048054b1fffc1868f081d6"
+        },
+        "title": "={{ $('Preparar entrada').first().json.idea || 'Sin idea' }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Resultado|select",
+              "selectValue": "Fuera de largo"
+            },
+            {
+              "key": "Detalle|rich_text",
+              "textContent": "={{ 'Texto de ' + $('Armar texto final').first().json.largo_texto + ' caracteres; rango permitido ' + $('Armar texto final').first().json.espacio_min + ' a ' + $('Armar texto final').first().json.espacio_max + '; total con aviso ' + $('Armar texto final').first().json.largo_total + ' (tope ' + $('Armar texto final').first().json.tope_total + ')' }}"
+            },
+            {
+              "key": "Fecha|date",
+              "date": "={{ $now.toISO() }}"
+            },
+            {
+              "key": "Post|relation",
+              "relationValue": [
+                "={{ $('Preparar entrada').first().json.pageId }}"
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4c6b6917-824b-4250-9487-f7c914fe26a4",
+      "name": "Registro: Fuera de largo",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        12688,
+        3728
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-sonnet-5-5",
+          "mode": "list",
+          "cachedResultName": "Claude Sonnet 5.5"
+        },
+        "options": {
+          "maxTokensToSample": 4000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.6,
+      "position": [
+        10224,
+        3696
+      ],
+      "id": "1455e01a-4d7b-49a6-9d5a-b081b0aff2c0",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "qm18tIRNcBh4xGv4",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Notion Trigger').first().json.id }}",
+          "mode": "id"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Estado|select",
+              "selectValue": "Error"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "494c4f57-0f04-4a27-90f9-c573c64f6bc4",
+      "name": "Estado: Error",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        12912,
+        3376
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "57bf1ff4-337f-49c6-b21a-b64af1781827",
+              "leftValue": "={{ $json.Estado }}",
+              "rightValue": "Pendiente",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        8416,
+        3408
+      ],
+      "id": "3b7016d2-06d3-4f6f-b197-b3e518f562b2",
+      "name": "¿Idea nueva?"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "0c4b3a58-a904-83d4-80b0-0109d626a9e0",
+          "mode": "list",
+          "cachedResultName": "Tema Finanzas Personales",
+          "cachedResultUrl": "https://app.notion.com/p/0c4b3a58a90483d480b00109d626a9e0"
+        },
+        "returnAll": true,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Etiqueta|multi_select",
+              "condition": "contains",
+              "multiSelectValue": "={{ $('Preparar entrada').first().json.aviso_etiqueta }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dae48db6-3954-43df-a557-4082848c51d3",
+      "name": "Leer aviso legal",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        9536,
+        3696
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C6FPP47GW",
+          "mode": "list",
+          "cachedResultName": "log-errores"
+        },
+        "text": "=Idea en proceso: {{ $json.idea }} ({{ $json.red_social }})",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        9312,
+        3696
+      ],
+      "id": "02a44a2c-8cbd-426f-bc5d-d77e67d833b3",
+      "name": "Slack: Abrir hilo",
+      "webhookId": "87b7b5a2-c2f3-4df1-90b2-92ca32da25d0",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "WEaMx24V2L36FiGB",
+          "name": "Slack account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C6GE91PC3",
+          "mode": "list",
+          "cachedResultName": "log-rechazados"
+        },
+        "text": "={{ $('HITL: Esperar aprobación').first().json.data?.approved === false ? 'Borrador rechazado: ' + $('Preparar entrada').first().json.idea + '. No se distribuyó, indagar si se tiene que modificar el prompt o la base del RAG.' : 'Borrador vencido sin respuesta: ' + $('Preparar entrada').first().json.idea + '. No se distribuyó; nadie lo revisó en el tiempo límite.' }}\n{{ $('Armar texto final').first().json.cuerpo_final }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        12016,
+        3584
+      ],
+      "id": "9a0b34d2-410a-4e43-a0b0-d861938c0e09",
+      "name": "Log: Borrador Rechazado",
+      "webhookId": "3d6019df-b864-4982-bff2-d737e614867b",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "WEaMx24V2L36FiGB",
+          "name": "Slack account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C6FPP47GW",
+          "mode": "list",
+          "cachedResultName": "log-errores"
+        },
+        "text": "=Publicado en {{ $('Preparar entrada').first().json.red_social }}",
+        "otherOptions": {
+          "thread_ts": {
+            "replyValues": {
+              "thread_ts": "={{ $('Slack: Abrir hilo').first().json.ts }}"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        12688,
+        2928
+      ],
+      "id": "6957a486-71b3-4fa0-b4df-4bff9fea59a2",
+      "name": "Log: Publicado",
+      "webhookId": "e83ad772-fe4c-401d-b28f-c1d755bab184",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "WEaMx24V2L36FiGB",
+          "name": "Slack account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C6FPP47GW",
+          "mode": "list",
+          "cachedResultName": "log-errores"
+        },
+        "text": "=Error al armar el texto final de: {{ $('Preparar entrada').first().json.idea }}\n{{ $('Armar texto final').first().json.error?.message || $('Armar texto final').first().json.error || 'Sin detalle' }}",
+        "otherOptions": {
+          "thread_ts": {
+            "replyValues": {
+              "thread_ts": "={{ $('Slack: Abrir hilo').first().json.ts }}"
+            }
+          }
+        }
+      },
+      "id": "e7c650f1-62ae-4ff3-8eb1-5750c21d1182",
+      "name": "Log: Error al armar texto",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        12464,
+        3920
+      ],
+      "webhookId": "4e09fe56-5ab0-432b-b45a-b2e68bde42e3",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "WEaMx24V2L36FiGB",
+          "name": "Slack account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "403b3a58-a904-8054-b1ff-fc1868f081d6",
+          "mode": "list",
+          "cachedResultName": "Registro de ejecuciones",
+          "cachedResultUrl": "https://app.notion.com/p/403b3a58a9048054b1fffc1868f081d6"
+        },
+        "title": "={{ $('Armar texto final').first().json.error?.message || $('Armar texto final').first().json.error || 'Error sin detalle' }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Resultado|select",
+              "selectValue": "Error agente"
+            },
+            {
+              "key": "Detalle|rich_text",
+              "textContent": "={{ 'Idea: ' + $('Preparar entrada').first().json.idea + ' · ' + ($('Armar texto final').first().json.error?.message || $('Armar texto final').first().json.error || 'Sin detalle') }}"
+            },
+            {
+              "key": "Fecha|date",
+              "date": "={{ $now.toISO() }}"
+            },
+            {
+              "key": "Post|relation",
+              "relationValue": [
+                "={{ $('Preparar entrada').first().json.pageId }}"
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5728188d-b71f-410d-b615-75a3ca204023",
+      "name": "Registro: Error al armar texto",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        12688,
+        3920
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "zjf7wGOTEsBE3dq6",
+          "name": "Notion account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Notion Trigger": {
+      "main": [
+        [
+          {
+            "node": "¿Idea nueva?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estado: Generando": {
+      "main": [
+        [
+          {
+            "node": "Leer directrices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer directrices": {
+      "main": [
+        [
+          {
+            "node": "Preparar entrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular espacio y aviso": {
+      "main": [
+        [
+          {
+            "node": "¿Imagen OK?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log: Falta aviso legal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Armar texto final": {
+      "main": [
+        [
+          {
+            "node": "¿Largo dentro del rango?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log: Error al armar texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar borrador (En revisión)": {
+      "main": [
+        [
+          {
+            "node": "HITL: Esperar aprobación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HITL: Esperar aprobación": {
+      "main": [
+        [
+          {
+            "node": "Registrar decisión",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar decisión": {
+      "main": [
+        [
+          {
+            "node": "Filtro: ¿Aprobado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtro: ¿Aprobado?": {
+      "main": [
+        [
+          {
+            "node": "Switch por red",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log: Borrador Rechazado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estado: Publicado": {
+      "main": [
+        [
+          {
+            "node": "Log: Publicado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar entrada": {
+      "main": [
+        [
+          {
+            "node": "Slack: Abrir hilo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log: Red sin configuración",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Imagen OK?": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log: Falta imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Armar texto final",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log: Error del agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Largo dentro del rango?": {
+      "main": [
+        [
+          {
+            "node": "Guardar borrador (En revisión)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log: Fuera de largo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch por red": {
+      "main": [
+        [
+          {
+            "node": "Publicar en LinkedIn (Simulado)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Publicar en Instagram (Simulado)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Publicar en X (Simulado)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Publicar en Facebook (Simulado)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Red sin rama de publicación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publicar en LinkedIn (Simulado)": {
+      "main": [
+        [
+          {
+            "node": "Estado: Publicado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publicar en Instagram (Simulado)": {
+      "main": [
+        [
+          {
+            "node": "Estado: Publicado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publicar en X (Simulado)": {
+      "main": [
+        [
+          {
+            "node": "Estado: Publicado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publicar en Facebook (Simulado)": {
+      "main": [
+        [
+          {
+            "node": "Estado: Publicado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Red sin rama de publicación": {
+      "main": [
+        [
+          {
+            "node": "Log: Red sin configuración",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_conocimiento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Idea nueva?": {
+      "main": [
+        [
+          {
+            "node": "Estado: Generando",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer aviso legal": {
+      "main": [
+        [
+          {
+            "node": "Calcular espacio y aviso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: Abrir hilo": {
+      "main": [
+        [
+          {
+            "node": "Leer aviso legal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log: Publicado": {
+      "main": [
+        [
+          {
+            "node": "Registro: Publicado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log: Falta aviso legal": {
+      "main": [
+        [
+          {
+            "node": "Registro: Sin aviso legal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registro: Sin aviso legal": {
+      "main": [
+        [
+          {
+            "node": "Estado: Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log: Falta imagen": {
+      "main": [
+        [
+          {
+            "node": "Registro: Falta imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registro: Falta imagen": {
+      "main": [
+        [
+          {
+            "node": "Estado: Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log: Error del agente": {
+      "main": [
+        [
+          {
+            "node": "Registro: Error del agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registro: Error del agente": {
+      "main": [
+        [
+          {
+            "node": "Estado: Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log: Fuera de largo": {
+      "main": [
+        [
+          {
+            "node": "Registro: Fuera de largo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log: Borrador Rechazado": {
+      "main": [
+        [
+          {
+            "node": "Registro: Rechazado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log: Red sin configuración": {
+      "main": [
+        [
+          {
+            "node": "Registro: Red no soportada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registro: Red no soportada": {
+      "main": [
+        [
+          {
+            "node": "Estado: Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registro: Fuera de largo": {
+      "main": [
+        [
+          {
+            "node": "Estado: Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log: Error al armar texto": {
+      "main": [
+        [
+          {
+            "node": "Registro: Error al armar texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registro: Error al armar texto": {
+      "main": [
+        [
+          {
+            "node": "Estado: Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "6cac26ac-658b-43c6-8705-73229330ca94",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "56f61458a7f97dbc6991d7553f51a1e11c7d7fe86ee1a77392e3734be1d5a266"
+  },
+  "nodeGroups": [],
+  "id": "a73T5oumaRndyxtq",
+  "tags": []
+}
