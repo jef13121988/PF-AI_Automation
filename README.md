@@ -83,7 +83,3 @@ Cualquier fallo sigue una de las 7 rutas de error (E1 a E7): aviso en el hilo de
 - [Video demo](https://drive.google.com/file/d/1ynEIyQv8EJgBYK3NuO3MmZsAavVi8ESy/view?usp=sharing)
 - [Dashboard de control (Notion)](https://app.notion.com/p/403b3a58a9048054b1fffc1868f081d6?v=40fb3a58a90480b8841c000cfc601c5d)
 - [Carpeta completa de la entrega (Google Drive)](https://drive.google.com/drive/folders/188BuAdBBToAoRt20oGG96WLCMRxcOMyw?usp=sharing)
-
-## Autor
-
-Jony · Entrega final del curso de automatización con IA, 2026.
